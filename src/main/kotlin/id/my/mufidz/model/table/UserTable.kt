@@ -5,11 +5,11 @@ import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
 
 object UserTable : IdTable<String>("user") {
+    override val id: Column<EntityID<String>> = text("id").entityId()
     val name = text("name")
     val username = text("username").uniqueIndex()
     val password = text("password")
     val salt = text("salt")
     val createdAt = text("created_at")
     val updatedAt = text("updated_at").nullable()
-    override val id: Column<EntityID<String>> = text("id").entityId()
 }

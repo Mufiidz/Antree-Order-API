@@ -2,13 +2,12 @@ package id.my.mufidz.routes
 
 import id.my.mufidz.response.ErrorWebResponse
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.plugins.*
+import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.serialization.SerializationException
-import org.valiktor.ConstraintViolationException
 
 fun StatusPagesConfig.errorRoute() {
     exception<AuthenticationException> { call, cause ->
@@ -78,12 +77,12 @@ fun StatusPagesConfig.errorRoute() {
             )
         )
     }
-    exception { call: ApplicationCall, cause: ConstraintViolationException ->
+    exception<RequestValidationException> { call, cause ->
         call.respond(
             HttpStatusCode.BadRequest,
             ErrorWebResponse(
                 HttpStatusCode.BadRequest.value,
-                cause.message ?: HttpStatusCode.BadRequest.description,
+                cause.reasons.joinToString(),
                 call.request.path()
             )
         )

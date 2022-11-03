@@ -1,5 +1,6 @@
 package id.my.mufidz.plugins
 
+import id.my.mufidz.model.table.MerchantTable
 import id.my.mufidz.model.table.UserTable
 import io.ktor.server.application.*
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,7 @@ fun Application.configureDatabase() {
         ).also {
             transaction(it) {
                 SchemaUtils.create(UserTable)
+                SchemaUtils.create(MerchantTable)
             }
         }
     }

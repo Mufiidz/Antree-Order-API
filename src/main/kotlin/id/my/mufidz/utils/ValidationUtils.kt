@@ -1,14 +1,13 @@
 package id.my.mufidz.utils
 
-import io.ktor.server.plugins.*
-import org.valiktor.ConstraintViolationException
-import org.valiktor.i18n.mapToMessage
+import io.ktor.server.plugins.requestvalidation.*
+import java.util.*
 
-fun tryCatch(run: () -> Unit) =
-    try {
-        run()
-    } catch (e: ConstraintViolationException) {
-        e.constraintViolations.mapToMessage().map {
-            throw BadRequestException("${it.property}: ${it.message}")
-        }
-    }
+object ValidationMessage {
+    fun isEmpty(name: String) =
+        ValidationResult.Invalid("${name.titleCase()} must not be empty")
+    fun min(name: String, min: Int) =
+        ValidationResult.Invalid("${name.titleCase()} length must be greater than $min")
+
+    private fun String.titleCase() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+}

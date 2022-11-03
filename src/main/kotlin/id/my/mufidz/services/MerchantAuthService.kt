@@ -1,9 +1,9 @@
 package id.my.mufidz.services
 
-import id.my.mufidz.dao.UserDao
+import id.my.mufidz.dao.MerchantDao
 import id.my.mufidz.model.*
 import id.my.mufidz.model.dto.LoginDTO
-import id.my.mufidz.model.dto.RegisterDTO
+import id.my.mufidz.model.dto.RegisterMerchantDTO
 import id.my.mufidz.plugins.dbQuery
 import id.my.mufidz.response.WebResponse
 import id.my.mufidz.security.hashing.HashingService
@@ -14,25 +14,25 @@ import io.ktor.server.plugins.*
 import io.ktor.server.sessions.*
 import java.util.*
 
-interface AuthService {
-    suspend fun register(request: RegisterDTO): WebResponse<String>
-    suspend fun login(request: LoginDTO, application: Application): WebResponse<User>
-    suspend fun deleteUser(userId: String): WebResponse<String>
-    fun logOut(session: CurrentSession) : WebResponse<String>
+interface MerchantAuthService {
+    suspend fun register(request: RegisterMerchantDTO): WebResponse<String>
+    suspend fun login(request: LoginDTO, application: Application): WebResponse<Merchant>
+    suspend fun deleteUser(providerId: String): WebResponse<String>
+    fun logOut(session: CurrentSession): WebResponse<String>
 }
 
-class AuthServiceImpl(
+class MerchantAuthServiceImpl(
     private val hashingService: HashingService,
-    private val userDao: UserDao,
+    private val merchantDao: MerchantDao,
     private val tokenService: TokenService
-) : AuthService {
+) : MerchantAuthService {
 
-    override suspend fun register(request: RegisterDTO): WebResponse<String> {
+    override suspend fun register(request: RegisterMerchantDTO): WebResponse<String> {
         dbQuery {
             val newUsername = checkUsername(request.username)
             val saltedHash = hashingService.generatePasswordHashed(request.password)
-            Register(generateUId(), request.name, newUsername, saltedHash).also {
-                userDao.addUser(it)
+            RegisterMerchant(generateUId(), request.name, request.desc, newUsername, saltedHash).also {
+                merchantDao.addMerchant(it)
             }
         }
         return WebResponse(
@@ -40,12 +40,13 @@ class AuthServiceImpl(
         )
     }
 
-    override suspend fun login(request: LoginDTO, application: Application): WebResponse<User> {
+    override suspend fun login(request: LoginDTO, application: Application): WebResponse<Merchant> {
         val username = request.username.replace("\\s".toRegex(), "").lowercase()
-        var user = User()
+        var merchant = Merchant()
         dbQuery {
             val userEntity =
-                userDao.getUserByUsername(username) ?: throw BadRequestException("Username '$username' doesn't exist")
+                merchantDao.getMerchantByUsername(username)
+                    ?: throw BadRequestException("Username '$username' doesn't exist")
             val isValidPassword = hashingService.verify(
                 request.password,
                 SaltedHash(userEntity.password, userEntity.salt)
@@ -57,11 +58,11 @@ class AuthServiceImpl(
                 getTokenConfig(application),
                 TokenClaim("userId", userEntity.id.value)
             )
-            user = userEntity.toUser(token)
+            merchant = userEntity.toMerchant(token)
         }
 
         return WebResponse(
-            HttpStatusCode.OK.value, "Successfully logged in", user
+            HttpStatusCode.OK.value, "Successfully logged in", merchant
         )
     }
 
@@ -71,16 +72,16 @@ class AuthServiceImpl(
         System.getenv("JWT_SECRET")
     )
 
-    override suspend fun deleteUser(userId: String): WebResponse<String> {
-        if (userId.isEmpty()) {
-            throw BadRequestException("UserId is empty")
+    override suspend fun deleteUser(providerId: String): WebResponse<String> {
+        if (providerId.isEmpty()) {
+            throw BadRequestException("ProviderId is empty")
         } else {
             dbQuery {
-                userDao.deleteUser(userId)
+                merchantDao.deleteMerchant(providerId)
             }
         }
         return WebResponse(
-            HttpStatusCode.OK.value, "Success", "Berhasil menghapus $userId"
+            HttpStatusCode.OK.value, "Success", "Berhasil menghapus $providerId"
         )
     }
 
@@ -101,7 +102,7 @@ class AuthServiceImpl(
         val usernameValidation = "^(?![_.])(?!.*[_.]{2})[a-z0-9._]+(?<![.])$".toRegex()
         if (usernameValidation.containsMatchIn(newUsername)) {
             dbQuery {
-                userDao.getUserByUsername(newUsername).takeIf { it != null }?.let {
+                merchantDao.getMerchantByUsername(newUsername).takeIf { it != null }?.let {
                     throw BadRequestException("Username '$newUsername' is already taken")
                 }
             }

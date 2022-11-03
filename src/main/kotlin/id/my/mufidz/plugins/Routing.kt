@@ -14,24 +14,30 @@ import kotlinx.html.h1
 fun Application.configureRouting() {
     install(StatusPages) { errorRoute() }
     routing {
-        get("/") {
-            if (call.principal<JWTPrincipal>() == null) {
-                call.respondHtml {
-                    body {
-                        h1 {
-                            +"Antree Order API v1"
+//        route("/") {
+//            get {
+//                call.respondRedirect("/antree-order")
+//            }
+//        }
+        route("/antree-order") {
+            get {
+                if (call.principal<JWTPrincipal>() == null) {
+                    call.respondHtml {
+                        body {
+                            h1 {
+                                +"Antree Order API v1"
+                            }
+                            +"Basic API using KTOR"
                         }
-                        +"Basic API using KTOR"
                     }
+                } else {
+                    call.respondRedirect("/api/user")
                 }
-            } else {
-                call.respondRedirect("/api/user")
             }
-        }
-        route("/api") {
             authRoute(this@configureRouting)
             authenticate {
                 profileRoute()
+                merchantRoutes()
             }
         }
     }

@@ -15,10 +15,13 @@ untuk pembuatan backend.
 - Java 11 or higher (to use Ktor Koin)
 
 ## Documentation
- - [Wiki](../../wiki) or [API Documentation](https://mufidz.notion.site/Antree-Order-API-86832c0520874cf68dad850a9f557dd5)
+ - [Wiki](../../wiki)
 
 ## Screenshoots
 ![Index](/screenshoots/index.jpg)
 
 ## Next Update
-- Open to public API
+- Other main feature
+- Using Role
+- Add API Key
+- Endpoint based on role

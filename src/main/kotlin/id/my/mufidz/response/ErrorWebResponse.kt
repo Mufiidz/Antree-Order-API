@@ -1,10 +1,13 @@
 package id.my.mufidz.response
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WebResponse<T>(
+data class ErrorWebResponse(
     override val code: Int,
     override val message: String,
-    val data: T,
+    val path: String,
+    val timestamp: Instant? = Clock.System.now()
 ) : BaseResponse
