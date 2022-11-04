@@ -8,6 +8,7 @@ import id.my.mufidz.plugins.dbQuery
 import id.my.mufidz.response.WebResponse
 import id.my.mufidz.security.hashing.HashingService
 import id.my.mufidz.security.token.TokenService
+import id.my.mufidz.utils.generateId
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -17,7 +18,7 @@ import java.util.*
 interface MerchantAuthService {
     suspend fun register(request: RegisterMerchantDTO): WebResponse<String>
     suspend fun login(request: LoginDTO, application: Application): WebResponse<Merchant>
-    suspend fun deleteUser(providerId: String): WebResponse<String>
+    suspend fun deleteUser(merchantId: String): WebResponse<String>
     fun logOut(session: CurrentSession): WebResponse<String>
 }
 
@@ -31,7 +32,13 @@ class MerchantAuthServiceImpl(
         dbQuery {
             val newUsername = checkUsername(request.username)
             val saltedHash = hashingService.generatePasswordHashed(request.password)
-            RegisterMerchant(generateUId(), request.name, request.desc, newUsername, saltedHash).also {
+            RegisterMerchant(
+                UUID.randomUUID().generateId(),
+                request.name,
+                request.description,
+                newUsername,
+                saltedHash
+            ).also {
                 merchantDao.addMerchant(it)
             }
         }
@@ -72,16 +79,16 @@ class MerchantAuthServiceImpl(
         System.getenv("JWT_SECRET")
     )
 
-    override suspend fun deleteUser(providerId: String): WebResponse<String> {
-        if (providerId.isEmpty()) {
-            throw BadRequestException("ProviderId is empty")
+    override suspend fun deleteUser(merchantId: String): WebResponse<String> {
+        if (merchantId.isEmpty()) {
+            throw BadRequestException("MerchantId is empty")
         } else {
             dbQuery {
-                merchantDao.deleteMerchant(providerId)
+                merchantDao.deleteMerchant(merchantId)
             }
         }
         return WebResponse(
-            HttpStatusCode.OK.value, "Success", "Berhasil menghapus $providerId"
+            HttpStatusCode.OK.value, "Success", "Berhasil menghapus $merchantId"
         )
     }
 
@@ -90,11 +97,6 @@ class MerchantAuthServiceImpl(
         return WebResponse(
             HttpStatusCode.OK.value, "Success", "You've been logged out"
         )
-    }
-
-    private fun generateUId(): String {
-        val id = UUID.randomUUID().toString().replace("-", "")
-        return if (id.length > 15) id.take(15) else id
     }
 
     private suspend fun checkUsername(username: String): String {

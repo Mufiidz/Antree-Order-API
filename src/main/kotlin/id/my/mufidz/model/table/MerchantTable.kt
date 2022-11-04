@@ -5,7 +5,7 @@ import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
 
 object MerchantTable : IdTable<String>("merchant") {
-    override val id: Column<EntityID<String>> = MerchantTable.text("id").entityId()
+    override val id: Column<EntityID<String>> = MerchantTable.text("merchant_id").entityId().uniqueIndex()
     val name = MerchantTable.text("name")
     val username = MerchantTable.text("username").uniqueIndex()
     val description = MerchantTable.text("description")

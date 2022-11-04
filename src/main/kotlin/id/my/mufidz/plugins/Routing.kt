@@ -34,10 +34,11 @@ fun Application.configureRouting() {
                     call.respondRedirect("/api/user")
                 }
             }
-            authRoute(this@configureRouting)
+            authRoutes(this@configureRouting)
             authenticate {
                 profileRoute()
                 merchantRoutes()
+                productRoutes()
             }
         }
     }

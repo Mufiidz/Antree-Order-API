@@ -13,7 +13,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import org.koin.ktor.ext.inject
 
-fun Route.authRoute(application: Application) {
+fun Route.authRoutes(application: Application) {
 
     val userAuthServices by inject<UserAuthService>()
     val merchantAuthService by inject<MerchantAuthService>()

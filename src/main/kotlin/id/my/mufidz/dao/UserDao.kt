@@ -3,6 +3,7 @@ package id.my.mufidz.dao
 import id.my.mufidz.model.Register
 import id.my.mufidz.model.entity.UserEntity
 import id.my.mufidz.model.table.UserTable
+import id.my.mufidz.utils.localeDateNow
 import io.ktor.util.*
 import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -20,7 +21,7 @@ class UserDaoImpl : UserDao {
             username = register.username.toLowerCasePreservingASCIIRules()
             password = register.saltedHash.hash
             salt = register.saltedHash.salt
-            createdAt = Clock.System.now().toString()
+            createdAt = Clock.System.localeDateNow()
         }
     }
 

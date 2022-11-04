@@ -8,6 +8,7 @@ import id.my.mufidz.plugins.dbQuery
 import id.my.mufidz.response.WebResponse
 import id.my.mufidz.security.hashing.HashingService
 import id.my.mufidz.security.token.TokenService
+import id.my.mufidz.utils.generateId
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -31,7 +32,7 @@ class UserAuthServiceImpl(
         dbQuery {
             val newUsername = checkUsername(request.username)
             val saltedHash = hashingService.generatePasswordHashed(request.password)
-            Register(generateUId(), request.name, newUsername, saltedHash).also {
+            Register(UUID.randomUUID().generateId(), request.name, newUsername, saltedHash).also {
                 userDao.addUser(it)
             }
         }
@@ -89,11 +90,6 @@ class UserAuthServiceImpl(
         return WebResponse(
             HttpStatusCode.OK.value, "Success", "You've been logged out"
         )
-    }
-
-    private fun generateUId(): String {
-        val id = UUID.randomUUID().toString().replace("-", "")
-        return if (id.length > 15) id.take(15) else id
     }
 
     private suspend fun checkUsername(username: String): String {

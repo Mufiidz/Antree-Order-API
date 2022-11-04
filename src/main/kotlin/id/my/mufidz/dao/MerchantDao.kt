@@ -2,14 +2,18 @@ package id.my.mufidz.dao
 
 import id.my.mufidz.model.Paginate
 import id.my.mufidz.model.RegisterMerchant
+import id.my.mufidz.model.dto.MerchantDTO
 import id.my.mufidz.model.entity.MerchantEntity
 import id.my.mufidz.model.table.MerchantTable
+import id.my.mufidz.utils.localeDateNow
 import io.ktor.util.*
 import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.transactions.transaction
 
 interface MerchantDao {
     suspend fun addMerchant(register: RegisterMerchant): MerchantEntity
+    suspend fun getMerchantById(merchantId: String): MerchantDTO
+    suspend fun checkMerchantById(merchantId: String) : Boolean
     suspend fun getMerchantByUsername(username: String): MerchantEntity?
     suspend fun getAllMerchant(page: Int, size: Int): Paginate<MerchantEntity>
     suspend fun deleteMerchant(id: String)
@@ -23,8 +27,16 @@ class MerchantDaoImpl : MerchantDao {
             description = register.desc
             password = register.saltedHash.hash
             salt = register.saltedHash.salt
-            createdAt = Clock.System.now().toString()
+            createdAt = Clock.System.localeDateNow()
         }
+    }
+
+    override suspend fun getMerchantById(merchantId: String) : MerchantDTO = transaction {
+        MerchantEntity[merchantId].toMerchantDTO()
+    }
+
+    override suspend fun checkMerchantById(merchantId: String): Boolean = transaction {
+        MerchantEntity.findById(merchantId) != null
     }
 
     override suspend fun getMerchantByUsername(username: String) = transaction {

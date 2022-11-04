@@ -3,7 +3,7 @@ Sebuah API yang akan mengatur antrean pemesanan. API ini menggunakan Kotlin [Kto
 untuk pembuatan backend.
 
 ## Library
-1. [Valiktor](https://github.com/valiktor/valiktor) for validate object
+1. [Kotlinx-Datetime](https://github.com/Kotlin/kotlinx-datetime) for date & time
 2. [Koin](https://insert-koin.io/docs/reference/koin-ktor/ktor/) for Dependency Injection for Ktor
 3. [Exposed](https://github.com/JetBrains/Exposed) for Database SQL Helper
 4. Used Serialization, Auth, and any more Ktor libraries

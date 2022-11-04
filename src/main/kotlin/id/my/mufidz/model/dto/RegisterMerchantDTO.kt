@@ -3,15 +3,13 @@ package id.my.mufidz.model.dto
 import id.my.mufidz.base.BaseDataClass
 import id.my.mufidz.utils.ValidationMessage
 import io.ktor.server.plugins.requestvalidation.*
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class RegisterMerchantDTO(
     val name: String = "",
     val username: String = "",
-    @SerialName("description")
-    val desc: String = "",
+    val description: String = "",
     val password: String = "",
 ) : BaseDataClass {
 

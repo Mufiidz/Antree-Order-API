@@ -1,12 +1,12 @@
 package id.my.mufidz.plugins
 
 import id.my.mufidz.model.table.MerchantTable
+import id.my.mufidz.model.table.ProductTable
 import id.my.mufidz.model.table.UserTable
 import io.ktor.server.application.*
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.exposedLogger
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -17,7 +17,6 @@ fun Application.configureDatabase() {
         val user = property("ktor.storage.user").getString()
         val password = property("ktor.storage.password").getString()
         val defaultDatabase = property("ktor.storage.database").getString()
-        exposedLogger.info("Init DB $jdbcURL")
         Database.connect(
             url = "$jdbcURL/$defaultDatabase",
             driver = driverClassName,
@@ -25,8 +24,7 @@ fun Application.configureDatabase() {
             password = password
         ).also {
             transaction(it) {
-                SchemaUtils.create(UserTable)
-                SchemaUtils.create(MerchantTable)
+                SchemaUtils.createMissingTablesAndColumns(UserTable, MerchantTable, ProductTable)
             }
         }
     }

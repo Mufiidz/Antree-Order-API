@@ -2,6 +2,7 @@ package id.my.mufidz.routes
 
 import id.my.mufidz.response.ErrorWebResponse
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
@@ -87,7 +88,20 @@ fun StatusPagesConfig.errorRoute() {
             )
         )
     }
+
+    exception { call: ApplicationCall, cause: IdNotFoundException ->
+        call.respond(
+            HttpStatusCode.NotFound,
+            ErrorWebResponse(
+                HttpStatusCode.NotFound.value,
+                cause.message ?: HttpStatusCode.NotFound.description,
+                call.request.path()
+            )
+        )
+    }
 }
 
 class AuthenticationException : RuntimeException()
 class AuthorizationException : RuntimeException()
+
+class IdNotFoundException(message: String? = "Resource not found") : Exception(message)
