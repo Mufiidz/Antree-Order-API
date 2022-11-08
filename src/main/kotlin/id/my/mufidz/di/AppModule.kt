@@ -17,10 +17,15 @@ val servicesModule = module {
     singleOf(::TokenServiceImpl) { bind<TokenService>() }
     singleOf(::MerchantServicesImpl) { bind<MerchantService>() }
     singleOf(::ProductServicesImpl) { bind<ProductServices>() }
+    singleOf(::AntrianServicesImpl) { bind<AntrianServices>() }
+    singleOf(::UserServicesImpl) { bind<UserServices>() }
 }
 
 val daoModule = module {
     singleOf(::UserDaoImpl) { bind<UserDao>() }
     singleOf(::MerchantDaoImpl) { bind<MerchantDao>() }
     singleOf(::ProductDaoImpl) { bind<ProductDao>() }
+    singleOf(::OrderDaoImpl) { bind<OrderDao>() }
+    singleOf(::StatusDaoImpl) { bind<StatusDao>() }
+    singleOf(::AntrianDaoImpl) { bind<AntrianDao>() }
 }

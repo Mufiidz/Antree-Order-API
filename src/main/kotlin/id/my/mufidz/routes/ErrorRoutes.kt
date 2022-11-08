@@ -103,5 +103,4 @@ fun StatusPagesConfig.errorRoute() {
 
 class AuthenticationException : RuntimeException()
 class AuthorizationException : RuntimeException()
-
-class IdNotFoundException(message: String? = "Resource not found") : Exception(message)
+class IdNotFoundException(paramaterName: String = "Id") : Exception("$paramaterName is Not Found")

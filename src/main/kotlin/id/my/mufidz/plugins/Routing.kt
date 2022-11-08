@@ -39,6 +39,8 @@ fun Application.configureRouting() {
                 profileRoute()
                 merchantRoutes()
                 productRoutes()
+                usersRoutes()
+                antrianRoutes()
             }
         }
     }

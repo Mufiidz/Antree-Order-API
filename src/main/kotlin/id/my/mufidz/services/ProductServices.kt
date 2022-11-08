@@ -7,12 +7,11 @@ import id.my.mufidz.model.dto.ProductDTO
 import id.my.mufidz.plugins.dbQuery
 import id.my.mufidz.response.WebResponse
 import id.my.mufidz.routes.IdNotFoundException
-import id.my.mufidz.utils.generateId
 import id.my.mufidz.utils.localeDateNow
+import id.my.mufidz.utils.generateId
 import io.ktor.http.*
 import io.ktor.server.plugins.*
 import kotlinx.datetime.Clock
-import java.util.*
 
 interface ProductServices {
     suspend fun addProduct(productDTO: ProductDTO): WebResponse<Product>
@@ -30,11 +29,11 @@ class ProductServicesImpl(
         var product: Product
         val merchantId = productDTO.merchantId
         when {
-            merchantId.isEmpty() -> throw BadRequestException("MerchantId is empty")
-            !merchantDao.checkMerchantById(merchantId) -> throw IdNotFoundException("Merchant with id $merchantId not found")
+            merchantId.isEmpty() -> throw MissingRequestParameterException("MerchantId")
+            !merchantDao.checkMerchantById(merchantId) -> throw IdNotFoundException("MerchantId")
             else -> {
                 productDTO.toProduct().copy(
-                    id = UUID.randomUUID().generateId(), createdAt = Clock.System.localeDateNow()
+                    id = generateId("P"), createdAt = Clock.System.localeDateNow()
                 ).also {
                     product = it
                     dbQuery {
@@ -49,30 +48,23 @@ class ProductServicesImpl(
     }
 
     override suspend fun getDetailProductById(productId: String): WebResponse<Product?> {
-        var product: Product? = null
+        val product: Product?
         when {
-            productId.isEmpty() -> throw BadRequestException("ProductId is empty")
-            !productDao.checkProductById(productId) -> throw IdNotFoundException("Product $productId tidak ditemukan")
-            else -> dbQuery {
-                product = productDao.getProductById(productId)
-            }
+            productId.isEmpty() -> throw MissingRequestParameterException("ProductId")
+            !productDao.checkProductById(productId) -> throw IdNotFoundException("ProductId")
+            else -> product = productDao.getProductById(productId)
         }
-        val message = if (product != null) "Success" else "Product $productId tidak ditemukan"
         return WebResponse(
-            HttpStatusCode.OK.value, message, product
+            HttpStatusCode.OK.value, "Success", product
         )
     }
 
     override suspend fun updateProduct(productId: String, productDTO: ProductDTO): WebResponse<Product?> {
-        var product: Product? = null
+        val product: Product?
         when {
-            productId.isEmpty() -> throw BadRequestException("ProductId is empty")
-            !productDao.checkProductById(productId) -> throw IdNotFoundException("Product $productId tidak ditemukan")
-            else -> {
-                dbQuery {
-                    product = productDao.updateProduct(productId, productDTO)
-                }
-            }
+            productId.isEmpty() -> throw MissingRequestParameterException("ProductId")
+            !productDao.checkProductById(productId) -> throw IdNotFoundException("ProductId")
+            else -> product = productDao.updateProduct(productId, productDTO)
         }
         return WebResponse(
             HttpStatusCode.OK.value, "Berhasil memperbarui $productId", product
@@ -81,8 +73,8 @@ class ProductServicesImpl(
 
     override suspend fun deleteProduct(productId: String): WebResponse<String> {
         when {
-            productId.isEmpty() -> throw BadRequestException("ProductId is empty")
-            !productDao.checkProductById(productId) -> throw IdNotFoundException("Product $productId tidak ditemukan")
+            productId.isEmpty() -> throw MissingRequestParameterException("ProductId")
+            !productDao.checkProductById(productId) -> throw IdNotFoundException("ProductId")
             else -> {
                 dbQuery {
                     productDao.deleteProduct(productId)

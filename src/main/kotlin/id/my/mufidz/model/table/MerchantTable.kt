@@ -1,16 +1,15 @@
 package id.my.mufidz.model.table
 
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.Column
+import id.my.mufidz.base.StringIdTable
+import id.my.mufidz.base.TableName
 
-object MerchantTable : IdTable<String>("merchant") {
-    override val id: Column<EntityID<String>> = MerchantTable.text("merchant_id").entityId().uniqueIndex()
-    val name = MerchantTable.text("name")
-    val username = MerchantTable.text("username").uniqueIndex()
-    val description = MerchantTable.text("description")
-    val password = MerchantTable.text("password")
-    val salt = MerchantTable.text("salt")
-    val createdAt = MerchantTable.text("created_at")
-    val updatedAt = MerchantTable.text("updated_at").nullable()
+object MerchantTable : StringIdTable(TableName.MERCHANT) {
+    val name = text("name")
+    val username = text("username").uniqueIndex()
+    val description = text("description")
+    val isOpen = bool("is_open").default(false)
+    val password = text("password")
+    val salt = text("salt")
+    override val createdAt = text(createdAtKey)
+    override val updatedAt = text(updatedAtKey).nullable()
 }

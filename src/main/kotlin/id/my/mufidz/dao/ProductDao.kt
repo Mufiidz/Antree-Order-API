@@ -3,17 +3,14 @@ package id.my.mufidz.dao
 import id.my.mufidz.model.Paginate
 import id.my.mufidz.model.Product
 import id.my.mufidz.model.dto.ProductDTO
-import id.my.mufidz.model.entity.MerchantEntity
 import id.my.mufidz.model.entity.ProductEntity
 import id.my.mufidz.model.table.ProductTable
-import id.my.mufidz.utils.localeDateNow
-import kotlinx.datetime.Clock
+import id.my.mufidz.plugins.dbQuery
 import org.jetbrains.exposed.sql.deleteAll
-import org.jetbrains.exposed.sql.transactions.transaction
 
 interface ProductDao {
     suspend fun addProduct(product: Product): Product
-    suspend fun checkProductById(productId: String) : Boolean
+    suspend fun checkProductById(productId: String): Boolean
     suspend fun getProductById(productId: String): Product
     suspend fun getListProductByMerchantId(merchantId: String, page: Int, size: Int): Paginate<ProductDTO>
     suspend fun updateProduct(productId: String, product: ProductDTO): Product
@@ -22,31 +19,21 @@ interface ProductDao {
 }
 
 class ProductDaoImpl : ProductDao {
-    override suspend fun addProduct(product: Product): Product = transaction {
-        ProductEntity.new(product.id) {
-            merchantId = MerchantEntity[product.merchantId]
-            title = product.title
-            category = product.category
-            description = product.description
-            quantity = product.quantity
-            price = product.price
-            createdAt = Clock.System.localeDateNow()
-        }.toProduct()
+    override suspend fun addProduct(product: Product): Product = dbQuery {
+        ProductEntity.new(product.id) { fromInsert(product) }.toProduct()
     }
 
-    override suspend fun checkProductById(productId: String): Boolean = transaction {
+    override suspend fun checkProductById(productId: String): Boolean = dbQuery {
         ProductEntity.findById(productId) != null
     }
 
-    override suspend fun getProductById(productId: String): Product = transaction {
+    override suspend fun getProductById(productId: String): Product = dbQuery {
         ProductEntity[productId].toProduct()
     }
 
     override suspend fun getListProductByMerchantId(merchantId: String, page: Int, size: Int): Paginate<ProductDTO> =
-        transaction {
-            val newPage = if (page <= 0) 0 else page
-            val newSize = if (size <= 5) 5 else size
-            val skip = newSize * newPage
+        dbQuery {
+            val skip = size * page
             var paginate: Paginate<ProductDTO>
             ProductEntity.find { ProductTable.merchantId eq merchantId }.also {
                 val total = it.count().toInt()
@@ -56,22 +43,15 @@ class ProductDaoImpl : ProductDao {
             paginate
         }
 
-    override suspend fun updateProduct(productId: String, product: ProductDTO): Product = transaction {
-        ProductEntity[productId].also {
-            it.title = product.title
-            it.category = product.category
-            it.description = product.description
-            it.quantity = product.quantity
-            it.price = product.price
-            it.updatedAt = Clock.System.localeDateNow()
-        }.toProduct()
+    override suspend fun updateProduct(productId: String, product: ProductDTO): Product = dbQuery {
+        ProductEntity[productId].also { it.fromUpdate(product) }.toProduct()
     }
 
-    override suspend fun deleteProduct(productId: String) = transaction {
+    override suspend fun deleteProduct(productId: String) = dbQuery {
         ProductEntity[productId].delete()
     }
 
-    override suspend fun deleteAllProduct(): Int = transaction {
+    override suspend fun deleteAllProduct(): Int = dbQuery {
         ProductTable.deleteAll()
     }
 

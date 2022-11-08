@@ -8,7 +8,10 @@ data class Merchant(
     val name: String = "",
     val username: String = "",
     val description: String = "",
+    val isOpen: Boolean = false,
     val token: String = "",
+    val products: List<Product> = emptyList(),
+    val antrians: List<Antrian> = emptyList(),
     val createdAt: String? = null,
     val updatedAt: String? = null,
 )

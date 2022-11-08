@@ -1,5 +1,6 @@
 package id.my.mufidz.response
 
+import id.my.mufidz.base.BaseResponse
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -33,7 +33,7 @@ fun Route.merchantRoute(application: Application, merchantAuthService: MerchantA
     }
     delete("/delete/{id}") {
         val id = call.parameters["id"].orEmpty()
-        merchantAuthService.deleteUser(id).also { call.respond(it) }
+        merchantAuthService.deleteMerchant(id).also { call.respond(it) }
     }
     authenticate {
         get("/logout") {

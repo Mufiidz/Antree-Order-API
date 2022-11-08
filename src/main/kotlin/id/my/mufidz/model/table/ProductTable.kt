@@ -1,22 +1,20 @@
 package id.my.mufidz.model.table
 
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.Column
+import id.my.mufidz.base.StringIdTable
+import id.my.mufidz.base.TableName
 import org.jetbrains.exposed.sql.ReferenceOption
 
-object ProductTable : IdTable<String>("product") {
-    override val id: Column<EntityID<String>> = ProductTable.text("product_id").entityId().uniqueIndex()
+object ProductTable : StringIdTable(TableName.PRODUCT) {
     val merchantId = reference(
-        "merchant_id", MerchantTable,
+        MerchantTable.id.nameInDatabaseCase(), MerchantTable,
         onDelete = ReferenceOption.CASCADE,
         onUpdate = ReferenceOption.CASCADE, "fk_merchantId"
     )
-    val title = ProductTable.text("name")
-    val category = ProductTable.text("category").default("")
-    val description = ProductTable.text("description").default("")
-    val quantity = ProductTable.integer("quantity").default(1)
-    val price = ProductTable.integer("price").default(0)
-    val createdAt = ProductTable.text("created_at")
-    val updatedAt = ProductTable.text("updated_at").nullable()
+    val title = text("name")
+    val category = text("category").default("")
+    val description = text("description").default("")
+    val quantity = integer("quantity").default(1)
+    val price = integer("price").default(0)
+    override val createdAt = text(createdAtKey)
+    override val updatedAt = text(updatedAtKey).nullable()
 }

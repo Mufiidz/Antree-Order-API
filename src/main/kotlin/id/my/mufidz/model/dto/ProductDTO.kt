@@ -21,7 +21,7 @@ data class ProductDTO(
         title.isEmpty() -> ValidationMessage.isEmpty("title")
         merchantId.isEmpty() -> ValidationMessage.isEmpty("merchantId")
         quantity < 1 -> ValidationMessage.min("quantity", 1)
-        price < 0 -> ValidationMessage.min("quantity", 0)
+        price < 0 -> ValidationMessage.min("price", 0)
         else -> ValidationResult.Valid
     }
 

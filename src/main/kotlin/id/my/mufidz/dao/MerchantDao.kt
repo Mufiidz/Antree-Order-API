@@ -1,61 +1,70 @@
 package id.my.mufidz.dao
 
-import id.my.mufidz.model.Paginate
-import id.my.mufidz.model.RegisterMerchant
-import id.my.mufidz.model.dto.MerchantDTO
+import id.my.mufidz.model.*
 import id.my.mufidz.model.entity.MerchantEntity
+import id.my.mufidz.model.table.AntrianTable
 import id.my.mufidz.model.table.MerchantTable
-import id.my.mufidz.utils.localeDateNow
-import io.ktor.util.*
-import kotlinx.datetime.Clock
-import org.jetbrains.exposed.sql.transactions.transaction
+import id.my.mufidz.plugins.dbQuery
 
 interface MerchantDao {
     suspend fun addMerchant(register: RegisterMerchant): MerchantEntity
-    suspend fun getMerchantById(merchantId: String): MerchantDTO
-    suspend fun checkMerchantById(merchantId: String) : Boolean
+    suspend fun getMerchantById(merchantId: String): Merchant
+    suspend fun checkMerchantById(merchantId: String): Boolean
     suspend fun getMerchantByUsername(username: String): MerchantEntity?
     suspend fun getAllMerchant(page: Int, size: Int): Paginate<MerchantEntity>
     suspend fun deleteMerchant(id: String)
+    suspend fun listAntrianByMerchantId(
+        merchantId: String, queryDate: QueryDate?, statusCode: Int?, page: Int, size: Int
+    ): Paginate<Antrian>
+
+    suspend fun updateOpenMerchant(merchantId: String, isOpen: Boolean = false): Merchant
+    suspend fun checkStatusOpenMerchant(merchantId: String): Boolean
 }
 
-class MerchantDaoImpl : MerchantDao {
-    override suspend fun addMerchant(register: RegisterMerchant): MerchantEntity = transaction {
-        MerchantEntity.new(register.id) {
-            name = register.name
-            username = register.username.toLowerCasePreservingASCIIRules()
-            description = register.desc
-            password = register.saltedHash.hash
-            salt = register.saltedHash.salt
-            createdAt = Clock.System.localeDateNow()
-        }
+class MerchantDaoImpl(private val antrianDao: AntrianDao) : MerchantDao {
+    override suspend fun addMerchant(register: RegisterMerchant): MerchantEntity = dbQuery {
+        MerchantEntity.new(register.id) { fromRegisterMerchant(register) }
     }
 
-    override suspend fun getMerchantById(merchantId: String) : MerchantDTO = transaction {
-        MerchantEntity[merchantId].toMerchantDTO()
+    override suspend fun getMerchantById(merchantId: String): Merchant = dbQuery {
+        MerchantEntity[merchantId].toMerchant()
     }
 
-    override suspend fun checkMerchantById(merchantId: String): Boolean = transaction {
+    override suspend fun checkMerchantById(merchantId: String): Boolean = dbQuery {
         MerchantEntity.findById(merchantId) != null
     }
 
-    override suspend fun getMerchantByUsername(username: String) = transaction {
+    override suspend fun getMerchantByUsername(username: String): MerchantEntity? = dbQuery {
         MerchantEntity.find {
             MerchantTable.username eq username
         }.firstOrNull()
     }
 
-    override suspend fun getAllMerchant(page: Int, size: Int) = transaction {
-        val newPage = if (page <= 0) 0 else page
-        val newSize = if (size <= 5) 5 else size
+    override suspend fun getAllMerchant(page: Int, size: Int): Paginate<MerchantEntity> = dbQuery {
         val total = MerchantEntity.all().count().toInt()
-        val skip = newSize * newPage
+        val skip = size * page
         val list = MerchantEntity.all().limit(size, skip.toLong()).toList()
         Paginate(total, list)
     }
 
-    override suspend fun deleteMerchant(id: String) = transaction {
+    override suspend fun deleteMerchant(id: String) = dbQuery {
         MerchantEntity[id].delete()
     }
+
+    override suspend fun listAntrianByMerchantId(
+        merchantId: String, queryDate: QueryDate?, statusCode: Int?, page: Int, size: Int
+    ): Paginate<Antrian> {
+        val antreeQuery = AntreeQuery(
+            merchantId, AntrianTable.merchantId, statusCode, queryDate, page, size
+        )
+        return antrianDao.listAntrianByQuery(antreeQuery)
+    }
+
+    override suspend fun updateOpenMerchant(merchantId: String, isOpen: Boolean): Merchant = dbQuery {
+        MerchantEntity[merchantId].also { it.isOpen = isOpen }.toMerchant()
+    }
+
+    override suspend fun checkStatusOpenMerchant(merchantId: String): Boolean =
+        dbQuery { MerchantEntity[merchantId].isOpen }
 }
 

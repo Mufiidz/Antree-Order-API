@@ -1,10 +1,7 @@
 package id.my.mufidz.plugins
 
 import id.my.mufidz.base.BaseDataClass
-import id.my.mufidz.model.dto.LoginDTO
-import id.my.mufidz.model.dto.ProductDTO
-import id.my.mufidz.model.dto.RegisterDTO
-import id.my.mufidz.model.dto.RegisterMerchantDTO
+import id.my.mufidz.model.dto.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.requestvalidation.*
 
@@ -14,6 +11,8 @@ fun Application.configureValidation() {
         valid<RegisterDTO>()
         valid<LoginDTO>()
         valid<ProductDTO>()
+        valid<AntrianDTO>()
+        valid<OrderDTO>()
     }
 }
 

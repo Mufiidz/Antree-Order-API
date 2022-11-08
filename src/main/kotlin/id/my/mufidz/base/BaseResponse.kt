@@ -1,4 +1,4 @@
-package id.my.mufidz.response
+package id.my.mufidz.base
 
 interface BaseResponse {
     val code: Int

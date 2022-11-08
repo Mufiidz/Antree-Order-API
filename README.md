@@ -21,7 +21,7 @@ untuk pembuatan backend.
 ![Index](/screenshoots/index.jpg)
 
 ## Next Update
-- Other main feature
+- Get data by bearer token
 - Using Role
 - Add API Key
 - Endpoint based on role

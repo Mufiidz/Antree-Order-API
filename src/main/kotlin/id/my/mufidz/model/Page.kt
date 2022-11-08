@@ -11,5 +11,8 @@ data class Page(
     @SerialName("total_page") var totalPage: Int = total / size,
 ) {
     val safeTotalPage: Int
-        get() = if (total % size == 0) totalPage else (totalPage + 1)
+        get() {
+            val rawTotalPage = if (total % size == 0) totalPage else (totalPage + 1)
+            return if (rawTotalPage <= 0) 1 else rawTotalPage
+        }
 }
